@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NutriTrack · Second Brain</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0a0a0a;--s1:#141414;--s2:#1c1c1c;--bd:rgba(255,255,255,.08);--t:#fff;--tm:rgba(255,255,255,.45);--td:rgba(255,255,255,.2);--nutri:#7bc88a}
+    body{background:#111827;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'DM Sans',sans-serif;padding:24px}
+    .phone{width:390px;height:844px;background:var(--bg);border-radius:54px;border:10px solid #222;box-shadow:0 0 0 1px #333,0 48px 140px rgba(0,0,0,.85);position:relative;overflow:hidden;display:flex;flex-direction:column}
+    .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:32px;background:#111;border-radius:0 0 18px 18px;z-index:100}
+    .sb{height:50px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 8px;flex-shrink:0}
+    .sb-t{font-size:15px;font-weight:600;color:#fff}
+    .sb-i{display:flex;gap:5px;align-items:center;color:#fff;font-size:11px;font-weight:600}
+    .app-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .nh{padding:8px 20px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .ntitle{font-family:'Bebas Neue',sans-serif;font-size:34px;color:#fff;letter-spacing:1px;line-height:1}
+    .nback{display:flex;align-items:center;gap:3px;color:var(--tm);font-size:14px;font-weight:500;text-decoration:none;padding:6px 0}
+    .nback svg{width:15px;height:15px}
+    .bicon{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.07);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .bicon svg{width:16px;height:16px}
+    .scroll{flex:1;overflow-y:auto;padding:0 16px 16px;scrollbar-width:none}
+    .scroll::-webkit-scrollbar{display:none}
+    .day-lbl{font-size:11px;font-weight:700;color:var(--td);letter-spacing:.8px;margin-bottom:8px}
+    .tgl-row{display:flex;gap:8px;margin-bottom:10px}
+    .tgl-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--bd);background:rgba(255,255,255,.04);color:var(--tm);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer}
+    .tgl-btn.on{background:rgba(123,200,138,.15);border-color:rgba(123,200,138,.35);color:var(--nutri)}
+    .target-lbl{font-size:10px;color:var(--td);text-align:center;margin-bottom:12px}
+    .kcal-card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:16px}
+    .kcal-ring{width:72px;height:72px;border-radius:50%;background:conic-gradient(var(--nutri) calc(var(--pct) * 1%), rgba(255,255,255,.08) 0);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .kcal-ring-in{width:56px;height:56px;border-radius:50%;background:var(--s1);display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .kcal-big{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;line-height:1}
+    .kcal-target{font-size:11px;color:var(--tm)}
+    .macro-row{margin-bottom:8px}
+    .macro-hdr{display:flex;justify-content:space-between;font-size:11px;color:var(--tm);margin-bottom:4px}
+    .macro-bar{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+    .macro-fill{height:100%;background:rgba(255,255,255,.55);border-radius:3px;transition:width .3s}
+    .macro-row:first-child .macro-fill{background:var(--nutri)}
+    .sec-hdr{font-size:10px;font-weight:700;color:var(--td);letter-spacing:1px;margin:14px 0 8px}
+    .mcard{background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
+    .mcard-main{flex:1;min-width:0}
+    .mcard-gruppo{font-size:10px;font-weight:700;color:var(--nutri);letter-spacing:.5px;margin-bottom:3px}
+    .mcard-nome{font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;line-height:1.3}
+    .mcard-macros{font-size:11px;color:var(--tm)}
+    .mcard-acts{display:flex;gap:4px;flex-shrink:0}
+    .ibtn{width:30px;height:30px;border-radius:8px;border:none;background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .ibtn svg{width:14px;height:14px}
+    .ibtn.del{color:rgba(255,100,100,.7)}
+  .empty-s{padding:28px 12px;text-align:center}
+    .empty-t{font-size:15px;font-weight:600;color:var(--tm)}
+    .empty-sub{font-size:12px;color:var(--td);margin-top:6px;line-height:1.4}
+    .fab-bar{padding:8px 16px 12px;display:flex;gap:8px;flex-shrink:0;border-top:1px solid var(--bd)}
+    .btn-main{flex:1;padding:14px;background:#fff;color:#0a0a0a;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+    .btn-sec{padding:14px 16px;background:rgba(255,255,255,.08);border:1px solid var(--bd);border-radius:12px;color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+    .overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+    .overlay.vis{opacity:1;pointer-events:all}
+    .sheet{position:absolute;bottom:0;left:0;right:0;background:#171717;border-radius:22px 22px 0 0;border-top:1px solid rgba(255,255,255,.07);z-index:60;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1);padding:10px 20px 32px;max-height:88%;overflow-y:auto}
+    .sheet.vis{transform:translateY(0)}
+    .sh{width:34px;height:4px;background:rgba(255,255,255,.18);border-radius:2px;margin:0 auto 16px}
+    .stitle{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#fff;margin-bottom:14px;letter-spacing:.5px}
+    .finput{width:100%;padding:12px;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:11px;color:#fff;font-family:inherit;font-size:13px;outline:none;resize:vertical;min-height:88px}
+    .finput:focus{border-color:rgba(123,200,138,.4)}
+    .import-actions{display:flex;gap:8px;margin:10px 0}
+    .bconfirm{width:100%;padding:14px;background:#fff;color:#0a0a0a;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
+    .bconfirm:disabled{opacity:.35;cursor:default}
+    .bconfirm.sm{width:auto;padding:10px 14px;font-size:13px;margin-top:0}
+    .btn-ghost{flex:1;padding:12px;background:rgba(255,255,255,.07);border:1px solid var(--bd);border-radius:10px;color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+    .import-hint,.import-err{font-size:12px;color:var(--tm);line-height:1.45;padding:10px 0}
+    .import-err{color:#ff8a8a}
+    .import-ok{background:rgba(123,200,138,.1);border:1px solid rgba(123,200,138,.25);border-radius:12px;padding:14px}
+    .import-ok-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+    .import-ok-gruppo{font-size:11px;color:var(--nutri);font-weight:600;margin-bottom:10px}
+    .import-ok-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+    .iv{display:block;font-size:10px;color:var(--td);margin-bottom:2px}
+    .in{font-size:16px;font-weight:700;color:#fff}
+    .pref-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .pref-info{flex:1;min-width:0}
+    .pref-nome{font-size:14px;font-weight:600;color:#fff}
+    .pref-sub{font-size:11px;color:var(--tm);margin-top:2px}
+    .pref-empty{font-size:12px;color:var(--td);line-height:1.5;padding:12px 0}
+    .format-box{font-size:10px;color:var(--td);line-height:1.5;background:rgba(255,255,255,.04);border-radius:8px;padding:10px;margin-top:10px;font-family:monospace}
+    .toast{position:absolute;bottom:88px;left:50%;transform:translateX(-50%) translateY(12px);background:#fff;color:#0a0a0a;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:200;white-space:nowrap}
+    .toast.vis{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="sb">
+      <span class="sb-t">9:41</span>
+      <div class="sb-i">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:14px;height:14px"><path d="M1.5 8.5a13 13 0 0 1 21 0M5 12a10 10 0 0 1 14 0M8.5 15.5a6 6 0 0 1 7 0M12 19h.01" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>5G</span>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="app-body">
+      <div class="nh">
+        <a class="nback" href="../../index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Brain
+        </a>
+        <span class="ntitle">NutriTrack</span>
+        <button type="button" class="bicon" onclick="openSheet('sh-pref')" title="Preferiti" aria-label="Preferiti">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+      </div>
+
+      <div class="scroll">
+        <div class="day-lbl" id="day-lbl">Oggi</div>
+        <div class="tgl-row">
+          <button type="button" class="tgl-btn on" id="toggle-train" onclick="setTrainingDay(true)">Allenamento</button>
+          <button type="button" class="tgl-btn" id="toggle-rest" onclick="setTrainingDay(false)">Riposo</button>
+        </div>
+        <p class="target-lbl" id="target-lbl">Allenamento · 2300 kcal</p>
+
+        <div class="kcal-card">
+          <div class="kcal-ring" id="kcal-ring" style="--pct:0">
+            <div class="kcal-ring-in">
+              <span class="kcal-big" id="kcal-big">0</span>
+              <span class="kcal-target" id="kcal-target">/ 2300</span>
+            </div>
+          </div>
+          <div style="flex:1" id="macro-bars"></div>
+        </div>
+
+        <div class="sec-hdr">PASTI DI OGGI</div>
+        <div id="lista-pasti"></div>
+      </div>
+
+      <div class="fab-bar">
+        <button type="button" class="btn-sec" onclick="openSheet('sh-pref')">Preferiti</button>
+        <button type="button" class="btn-main" onclick="apriImport()">Importa pasto</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closeSheet()"></div>
+
+    <div class="sheet" id="sh-import">
+      <div class="sh"></div>
+      <div class="stitle">Importa da Claude</div>
+      <textarea class="finput" id="import-text" placeholder="Incolla qui la riga PASTO: ..."></textarea>
+      <div class="import-actions">
+        <button type="button" class="btn-ghost" onclick="incollaDaAppunti(false)">Incolla appunti</button>
+        <button type="button" class="btn-ghost" onclick="anteprimaImport()">Anteprima</button>
+      </div>
+      <div id="import-preview"></div>
+      <button type="button" class="bconfirm" id="btn-conferma-import" disabled onclick="confermaImport()">Registra pasto</button>
+      <div class="format-box">PASTO: nome | kcal | P | C | G | colazione|pranzo|cena|snack</div>
+    </div>
+
+    <div class="sheet" id="sh-pref">
+      <div class="sh"></div>
+      <div class="stitle">Preferiti</div>
+      <div id="lista-pref"></div>
+    </div>
+  </div>
+
+  <script src="js/core/constants.js"></script>
+  <script src="js/core/utils.js"></script>
+  <script src="js/data/store.js"></script>
+  <script src="js/services/nutritionService.js"></script>
+  <script src="js/ui/shared.js"></script>
+  <script src="js/ui/dayView.js"></script>
+  <script src="js/ui/importView.js"></script>
+  <script src="js/ui/bootstrap.js"></script>
+</body>
+</html>

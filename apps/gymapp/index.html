@@ -1,0 +1,632 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GymApp · Second Brain</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--s1:#141414;--s2:#1c1c1c;--bd:rgba(255,255,255,0.08);--t:white;--tm:rgba(255,255,255,0.45);--td:rgba(255,255,255,0.2)}
+body{background:#111827;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'DM Sans',sans-serif;padding:24px}
+.phone{width:390px;height:844px;background:var(--bg);border-radius:54px;border:10px solid #222;box-shadow:0 0 0 1px #333,0 48px 140px rgba(0,0,0,.85);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:32px;background:#111;border-radius:0 0 18px 18px;z-index:100}
+.sb{height:50px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 8px;flex-shrink:0}
+.sb-t{font-size:15px;font-weight:600;color:white}
+.sb-i{display:flex;gap:5px;align-items:center;color:white;font-size:11px;font-weight:600}
+.sc{flex:1;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);opacity:0;pointer-events:none;transform:translateX(32px);transition:opacity .28s,transform .28s}
+.screen.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.screen.out{opacity:0;transform:translateX(-32px)}
+.nh{padding:10px 20px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ntitle{font-family:'Bebas Neue',sans-serif;font-size:36px;color:white;letter-spacing:1px;line-height:1}
+.nback{display:flex;align-items:center;gap:3px;color:var(--tm);font-size:15px;font-weight:500;cursor:pointer;padding:6px 0}
+.nback svg{width:15px;height:15px}
+.bicon{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.07);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.bicon:hover{background:rgba(255,255,255,.15)}
+.bicon svg{width:16px;height:16px}
+.scroll{flex:1;overflow-y:auto;padding:0 16px 12px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+
+/* Scheda card */
+.scard{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:16px 18px;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between;gap:10px;transition:background .15s}
+.scard-main{flex:1;display:flex;align-items:center;justify-content:space-between;cursor:pointer;min-width:0}
+.scard-main:hover .scard-l{opacity:.95}
+.scard-main:active{transform:scale(.985)}
+.scard-l{display:flex;align-items:center;gap:14px}
+.scard-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.25);flex-shrink:0}
+.scard-nome{font-size:15px;font-weight:600;color:white;margin-bottom:3px}
+.scard-sub{font-size:12px;color:var(--tm)}
+.scard-chev svg{width:14px;height:14px;color:var(--td)}
+.dnd-handle{width:28px;height:28px;border-radius:8px;border:none;background:rgba(255,255,255,.06);color:rgba(255,255,255,.35);cursor:grab;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:none;transition:background .15s,color .15s}
+.dnd-handle:hover{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6)}
+.dnd-handle:active{cursor:grabbing}
+.dnd-handle svg{width:16px;height:16px}
+.dnd-item{transition:transform .15s,opacity .15s,box-shadow .15s}
+.dnd-item.dnd-dragging{opacity:.55;transform:scale(1.02);box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5;position:relative}
+.dnd-item.dnd-over-before{box-shadow:inset 0 2px 0 white}
+.dnd-item.dnd-over-after{box-shadow:inset 0 -2px 0 white}
+.dnd-hint{text-align:center;font-size:10px;color:rgba(255,255,255,.12);padding:6px 0 4px;letter-spacing:.2px}
+
+/* Tabella esercizi */
+.th{display:flex;align-items:center;gap:4px;padding:8px 10px 6px;margin:0 2px 4px;flex-shrink:0}
+.th span{font-size:10px;font-weight:700;color:var(--td);letter-spacing:.9px;display:block;text-align:center}
+.cn{flex:1;min-width:0;overflow:hidden}
+.cn span{text-align:left}
+.cs{width:28px;flex-shrink:0}
+.cr{width:42px;flex-shrink:0}
+.cri{width:30px;flex-shrink:0}
+.cp{width:52px;flex-shrink:0}
+.ca{width:62px;flex-shrink:0}
+.erow{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:13px 10px;margin-bottom:7px;display:flex;align-items:center;gap:4px}
+.erow:hover{background:rgba(255,255,255,.07)}
+.enome{font-size:13px;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;width:100%}
+.cval{text-align:center;font-size:14px;font-weight:600;color:white;display:block}
+.rir-b{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.13);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;margin:0 auto}
+.pcell{display:flex;align-items:baseline;justify-content:center;gap:1px}
+.pval{font-size:13px;font-weight:700;color:white}
+.punit{font-size:10px;color:var(--tm);margin-left:1px}
+.racts{display:flex;gap:5px;justify-content:flex-end}
+.rbtn{width:28px;height:28px;border-radius:7px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0}
+.rbtn svg{width:12px;height:12px}
+.rbtn.edit{background:rgba(255,255,255,.1);color:rgba(255,255,255,.75)}
+.rbtn.del{background:rgba(255,255,255,.05);color:rgba(255,255,255,.35)}
+.rbtn.edit:hover{background:rgba(255,255,255,.18)}
+.rbtn.del:hover{background:rgba(255,60,60,.2);color:rgba(255,100,100,.8)}
+.btn-start{margin:6px 16px 10px;padding:15px;background:white;color:black;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;transition:opacity .15s}
+.btn-start:hover{opacity:.9}
+.btn-start svg{width:15px;height:15px}
+
+/* Sessione */
+.sess-nome{font-family:'Bebas Neue',sans-serif;font-size:32px;color:white;letter-spacing:1px;line-height:1.1;padding:0 20px 6px;flex-shrink:0}
+.set-tabs{display:flex;gap:8px;padding:10px 20px;flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+.set-tabs::-webkit-scrollbar{display:none}
+.stab{padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;border:1px solid rgba(255,255,255,.1);transition:all .15s;color:var(--tm);background:transparent}
+.stab.active{background:white;color:black;border-color:white}
+.stab.done{background:rgba(255,255,255,.12);color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.08)}
+.params{padding:6px 16px;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+.prow{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.05);border-radius:12px}
+.plabel{font-size:13px;font-weight:500;color:var(--tm)}
+.pfixed{font-size:15px;font-weight:700;color:white}
+.pstep{display:flex;align-items:center;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden}
+.psbtn{width:36px;height:36px;background:none;border:none;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s}
+.psbtn:hover{background:rgba(255,255,255,.1)}
+.psval{min-width:36px;text-align:center;font-size:16px;font-weight:700;color:white}
+.punit2{font-size:12px;color:var(--tm);font-weight:500;margin-left:6px}
+.btn-setdone{margin:10px 16px 0;padding:15px;background:white;color:black;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;transition:opacity .15s}
+.btn-setdone.done{background:rgba(255,255,255,.1);color:rgba(255,255,255,.4)}
+.btn-setdone svg{width:16px;height:16px}
+.timer-box{margin:10px 16px 0;padding:16px 20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;flex-shrink:0;transition:background .15s}
+.timer-box:hover{background:rgba(255,255,255,.07)}
+.timer-l{display:flex;align-items:center;gap:10px}
+.timer-lbl{font-size:11px;font-weight:600;color:var(--tm);letter-spacing:.8px;margin-bottom:2px}
+.timer-val{font-family:'Bebas Neue',sans-serif;font-size:28px;color:white;letter-spacing:2px;line-height:1}
+.timer-val.warn{color:#ff9f43}
+.timer-val.idle{color:rgba(255,255,255,.3)}
+.timer-hint{font-size:11px;color:var(--td);display:flex;align-items:center;gap:3px}
+.timer-hint svg{width:12px;height:12px}
+.nav-ese{margin:10px 16px 0;display:flex;gap:8px;flex-shrink:0}
+.bnav{flex:1;padding:13px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s}
+.bnav:hover{background:rgba(255,255,255,.12)}
+.bnav:disabled{opacity:.25;cursor:default}
+.bnav svg{width:14px;height:14px}
+.btn-fine{margin:8px 16px 12px;padding:14px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:12px;color:rgba(255,255,255,.5);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0;transition:all .15s}
+.btn-fine:hover{border-color:rgba(255,255,255,.3);color:white}
+
+/* Calendario */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px 10px;flex-shrink:0}
+.cal-mese{font-family:'Bebas Neue',sans-serif;font-size:26px;color:white;letter-spacing:1px}
+.cal-nbtn{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.07);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.cal-nbtn:hover{background:rgba(255,255,255,.15)}
+.cal-nbtn svg{width:14px;height:14px}
+.cal-hdr{display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px;margin-bottom:4px;flex-shrink:0}
+.cal-dl{text-align:center;font-size:12px;font-weight:700;color:var(--td);letter-spacing:.5px;padding:6px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding:0 10px;flex-shrink:0}
+.cal-cell{aspect-ratio:1;min-height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;cursor:pointer;transition:background .15s;position:relative}
+.cal-cell:hover{background:rgba(255,255,255,.07)}
+.cal-cell.empty{pointer-events:none}
+.cal-cell.trained{background:rgba(255,255,255,.07)}
+.cal-cell.trained:hover{background:rgba(255,255,255,.12)}
+.cal-cell.today .cal-n{background:white;color:black;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.cal-n{font-size:13px;font-weight:600;color:white;line-height:1}
+.cal-cell.other .cal-n{color:var(--td)}
+.cal-dot{width:5px;height:5px;border-radius:50%;background:white;opacity:.8}
+.cal-leg{display:flex;align-items:center;gap:6px;padding:10px 20px 0;flex-shrink:0}
+.cal-leg-dot{width:7px;height:7px;border-radius:50%;background:white;opacity:.5}
+.cal-leg-t{font-size:11px;color:var(--td)}
+.stat-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 16px 0;flex-shrink:0}
+.stat-card{background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:12px;padding:10px 8px;text-align:center}
+.stat-v{font-family:'Bebas Neue',sans-serif;font-size:22px;color:white;letter-spacing:.5px;line-height:1.1}
+.stat-u{font-size:11px;color:var(--tm)}
+.stat-l{font-size:10px;font-weight:700;color:var(--td);letter-spacing:.8px;margin-top:4px}
+.stat-card.pos .stat-v{color:#50c878}
+.stat-card.neg .stat-v{color:#ff6b6b}
+
+/* Grafico */
+.g-sel{margin:0 16px 8px;padding:12px 16px;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .15s;flex-shrink:0}
+.g-sel:hover{background:rgba(255,255,255,.1)}
+.g-sel-l{font-size:15px;font-weight:600;color:white}
+.g-sel-i svg{width:16px;height:16px;color:var(--tm)}
+.met-tabs{display:flex;gap:8px;padding:0 16px 8px;flex-shrink:0}
+.mtab{padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;border:1px solid rgba(255,255,255,.1);transition:all .15s;color:var(--tm);background:transparent}
+.mtab.active{background:white;color:black;border-color:white}
+.g-card{margin:0 16px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:16px;padding:10px 12px 8px;flex-shrink:0}
+.g-card-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.g-card-nome{font-size:15px;font-weight:700;color:white}
+.g-card-sub{font-size:11px;color:var(--tm);margin-top:3px}
+.chart-wrap{width:100%;position:relative}
+.chart-wrap svg{width:100%;overflow:visible}
+.chart-tooltip{position:absolute;background:#222;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;color:white;pointer-events:none;opacity:0;transition:opacity .15s;white-space:nowrap;z-index:10}
+.chart-tooltip.vis{opacity:1}
+.ult-sess{margin:8px 16px 0;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:16px;overflow:hidden;flex-shrink:0}
+.ult-hdr{padding:10px 14px 8px;font-size:10px;font-weight:700;color:var(--td);letter-spacing:1px;border-bottom:1px solid var(--bd)}
+.sess-row{display:flex;align-items:center;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.04)}
+.sess-row:last-child{border-bottom:none}
+.sess-data{font-size:13px;font-weight:500;color:var(--tm);width:58px;flex-shrink:0}
+.sess-reps{font-size:13px;font-weight:600;color:white;flex:1}
+.sess-peso{font-size:14px;font-weight:700;color:white}
+.sess-punit{font-size:11px;color:var(--tm);margin-left:1px}
+.sess-delta{font-size:11px;font-weight:600;margin-left:8px;width:36px;text-align:right;flex-shrink:0}
+.sess-delta.su{color:#50c878}
+.sess-delta.giu{color:#ff6b6b}
+.sess-delta.par{color:var(--td)}
+.btn-mostra{width:100%;padding:10px;background:none;border:none;border-top:1px solid rgba(255,255,255,.05);color:var(--tm);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:color .15s,background .15s;border-radius:0 0 16px 16px}
+.btn-mostra:hover{color:white;background:rgba(255,255,255,.04)}
+.g-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:40px 20px}
+.g-empty svg{width:48px;height:48px;color:white;opacity:.15}
+.g-empty-t{font-size:16px;font-weight:600;color:var(--tm)}
+.g-empty-s{font-size:12px;color:var(--td);text-align:center;line-height:1.5}
+
+/* Sheet */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.vis{opacity:1;pointer-events:all}
+.sheet{position:absolute;bottom:0;left:0;right:0;background:#171717;border-radius:22px 22px 0 0;border-top:1px solid rgba(255,255,255,.07);z-index:60;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1);padding:10px 20px 36px;max-height:85%;overflow-y:auto;scrollbar-width:none}
+.sheet::-webkit-scrollbar{display:none}
+.sheet.vis{transform:translateY(0)}
+.sh{width:34px;height:4px;background:rgba(255,255,255,.18);border-radius:2px;margin:0 auto 18px}
+.stitle{font-family:'Bebas Neue',sans-serif;font-size:24px;color:white;margin-bottom:18px;letter-spacing:.5px}
+.fg{margin-bottom:16px}
+.flabel{font-size:10px;font-weight:700;color:var(--td);letter-spacing:1px;margin-bottom:7px;display:block}
+.finput{width:100%;padding:13px 14px;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:11px;color:white;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .15s,background .15s}
+.finput:focus{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.09)}
+.finput::placeholder{color:var(--td)}
+.stepr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:11px}
+.steplbl{font-size:14px;font-weight:500;color:white}
+.stepc{display:flex;align-items:center;background:rgba(255,255,255,.07);border-radius:9px;overflow:hidden}
+.stepbtn{width:36px;height:36px;background:none;border:none;color:white;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s}
+.stepbtn:hover{background:rgba(255,255,255,.1)}
+.stepv{width:30px;text-align:center;font-size:16px;font-weight:700;color:white}
+.bconfirm{width:100%;padding:14px;background:white;color:black;border:none;border-radius:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .15s}
+.bconfirm:hover{opacity:.88}
+.ese-opt{padding:14px 16px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .15s;margin-bottom:4px}
+.ese-opt:hover{background:rgba(255,255,255,.07)}
+.ese-opt.sel{background:rgba(255,255,255,.1)}
+.ese-opt-nome{font-size:15px;font-weight:600;color:white}
+.ese-opt-sub{font-size:12px;color:var(--tm);margin-top:2px}
+.ese-opt-chk svg{width:16px;height:16px;color:white}
+.tpreset{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.tpbtn{padding:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-align:center;transition:background .15s}
+.tpbtn.sel{background:white;color:black;border-color:white}
+.det-data{font-size:13px;font-weight:500;color:var(--tm);margin-bottom:4px}
+.det-scheda{font-family:'Bebas Neue',sans-serif;font-size:28px;color:white;letter-spacing:.5px;margin-bottom:16px}
+.det-ese-nome{font-size:14px;font-weight:700;color:white;margin-bottom:6px}
+.det-set-row{display:flex;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.det-set-row:last-child{border-bottom:none}
+.det-set-num{font-size:11px;font-weight:700;color:var(--td);width:40px}
+.det-set-val{font-size:13px;font-weight:600;color:white;flex:1}
+.det-set-peso{font-size:14px;font-weight:700;color:white}
+.det-set-unit{font-size:11px;color:var(--tm);margin-left:2px}
+.ese-div{height:1px;background:rgba(255,255,255,.07);margin:10px 0}
+.empty-s{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:40px 20px}
+.empty-s svg{width:48px;height:48px;color:white;opacity:.2}
+.empty-t{font-size:16px;font-weight:600;color:var(--tm)}
+.empty-sub{font-size:12px;color:var(--td);text-align:center}
+.hint{text-align:center;font-size:10px;color:rgba(255,255,255,.15);padding:4px 0 8px;letter-spacing:.2px}
+.toast{position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(12px);background:white;color:#0a0a0a;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:200;white-space:nowrap}
+.toast.vis{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Tab bar */
+.tbar{height:80px;background:#0f0f0f;border-top:1px solid var(--bd);display:flex;align-items:flex-start;padding-top:10px;flex-shrink:0}
+.titem{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;transition:opacity .15s}
+.titem:hover{opacity:.75}
+.ticon{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.ticon svg{width:22px;height:22px}
+.tlabel{font-size:10px;font-weight:500}
+.titem.on .tlabel{color:white}
+.titem.on .ticon svg{color:white}
+.titem.off .tlabel{color:var(--tm)}
+.titem.off .ticon svg{color:var(--tm)}
+.titem.off{opacity:.55}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ── Calendario ── */
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px 12px;
+      flex-shrink: 0;
+    }
+    .cal-mese {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px; color: white; letter-spacing: 0.5px;
+    }
+    .cal-nav-btn {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.07);
+      color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .cal-nav-btn:hover { background: rgba(255,255,255,0.15); }
+    .cal-nav-btn svg { width: 14px; height: 14px; }
+
+    /* Griglia giorni settimana */
+    .cal-giorni-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      padding: 0 16px;
+      margin-bottom: 4px;
+      flex-shrink: 0;
+    }
+    .cal-giorno-label {
+      text-align: center;
+      font-size: 10px; font-weight: 700;
+      color: var(--text-dim); letter-spacing: 0.5px;
+      padding: 4px 0;
+    }
+
+    /* Griglia celle */
+    .cal-griglia {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+    .cal-cella {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-muted);
+      cursor: default;
+      position: relative;
+      transition: background 0.15s;
+    }
+    .cal-cella.vuota { visibility: hidden; }
+    .cal-cella.oggi {
+      color: white; font-weight: 700;
+    }
+    .cal-cella.oggi::after {
+      content: '';
+      position: absolute;
+      bottom: 4px; left: 50%;
+      transform: translateX(-50%);
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: white;
+    }
+    .cal-cella.allenato {
+      background: rgba(255,255,255,0.12);
+      color: white; font-weight: 600;
+      cursor: pointer;
+    }
+    .cal-cella.allenato:hover { background: rgba(255,255,255,0.2); }
+    .cal-cella.allenato:active { transform: scale(0.93); }
+    .cal-cella.oggi.allenato {
+      background: white; color: black;
+    }
+    .cal-cella.oggi.allenato::after { background: black; }
+
+    /* Stats mese */
+    .cal-stats {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px 0;
+      flex-shrink: 0;
+    }
+    .cal-stat {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .cal-stat-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px; color: white; letter-spacing: 0.5px;
+    }
+    .cal-stat-label {
+      font-size: 10px; font-weight: 700;
+      color: var(--text-dim); letter-spacing: 0.8px;
+      margin-top: 2px;
+    }
+
+    /* Sheet giorno */
+    .giorno-sheet-data {
+      font-size: 13px; color: var(--text-muted);
+      margin-bottom: 16px; font-weight: 500;
+    }
+    .scheda-allenata-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+    .scheda-allenata-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: white; flex-shrink: 0;
+    }
+    .scheda-allenata-nome {
+      font-size: 16px; font-weight: 700; color: white;
+    }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb">
+    <span class="sb-t">9:41</span>
+    <div class="sb-i">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:14px;height:14px"><path d="M1.5 8.5a13 13 0 0 1 21 0M5 12a10 10 0 0 1 14 0M8.5 15.5a6 6 0 0 1 7 0M12 19h.01" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>5G</span>
+      <svg viewBox="0 0 24 24" style="width:18px;height:14px"><rect x="2" y="7" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="3" y="8" width="11" height="8" rx="1" fill="currentColor"/><path d="M20 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="sc">
+    <!-- SCHEDE -->
+    <div class="screen active" id="s-schede">
+      <div class="nh">
+        <a class="bicon" href="../../index.html" title="Torna a Second Brain" aria-label="Second Brain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></a>
+        <span class="ntitle" style="font-size:30px">Le mie Schede</span>
+        <button class="bicon" onclick="openSheet('sh-new-scheda')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      </div>
+      <div class="scroll" id="lista-schede"></div>
+      <p class="dnd-hint" id="hint-schede" style="display:none">Trascina &#8801; per riordinare</p>
+    </div>
+
+    <!-- DETTAGLIO SCHEDA -->
+    <div class="screen" id="s-dettaglio">
+      <div class="nh">
+        <div class="nback" onclick="goTo('s-schede')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Schede</div>
+        <button class="bicon" onclick="openSheet('sh-new-ese')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      </div>
+      <div style="padding:0 20px 10px;flex-shrink:0"><div class="ntitle" id="det-title"></div></div>
+      <div class="th">
+        <div class="cn"><span>ESERCIZIO</span></div>
+        <div class="cs"><span>SET</span></div>
+        <div class="cr"><span>REP P</span></div>
+        <div class="cri"><span>RIR</span></div>
+        <div class="cp"><span>PESO</span></div>
+        <div class="ca"></div>
+      </div>
+      <div class="scroll" id="lista-ese"></div>
+      <p class="dnd-hint" id="hint-ese" style="display:none">Trascina &#8801; per riordinare</p>
+      <button class="btn-start" onclick="avviaSessione()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>Inizia Sessione
+      </button>
+    </div>
+
+    <!-- SESSIONE -->
+    <div class="screen" id="s-sessione">
+      <div class="nh">
+        <div class="nback" onclick="chiudiSess()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Schede</div>
+        <div style="font-size:12px;color:var(--tm);font-weight:500" id="sess-prog"></div>
+      </div>
+      <div class="sess-nome" id="sess-nome"></div>
+      <div class="set-tabs" id="set-tabs"></div>
+      <div class="params">
+        <div class="prow"><span class="plabel">Reps Previste</span><span class="pfixed" id="p-repp"></span></div>
+        <div class="prow"><span class="plabel">RIR</span><span class="pfixed" id="p-rir"></span></div>
+        <div class="prow"><span class="plabel">Reps Effettuate</span>
+          <div style="display:flex;align-items:center">
+            <div class="pstep"><button class="psbtn" onclick="cambiaSet('repE',-1)">-</button><span class="psval" id="p-repe">8</span><button class="psbtn" onclick="cambiaSet('repE',1)">+</button></div>
+          </div>
+        </div>
+        <div class="prow"><span class="plabel">Peso</span>
+          <div style="display:flex;align-items:center">
+            <div class="pstep"><button class="psbtn" onclick="cambiaSet('peso',-2.5)">-</button><span class="psval" id="p-peso">90</span><button class="psbtn" onclick="cambiaSet('peso',2.5)">+</button></div>
+            <span class="punit2">kg</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-setdone" id="btn-setdone" onclick="completaSet()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Set Completato
+      </button>
+      <div class="timer-box" onclick="openSheet('sh-timer')">
+        <div class="timer-l">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:18px;height:18px;color:var(--tm)"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 15.5"/></svg>
+          <div><div class="timer-lbl">RECUPERO</div><div class="timer-val idle" id="timer-disp">02:00</div></div>
+        </div>
+        <div class="timer-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Modifica</div>
+      </div>
+      <div class="nav-ese">
+        <button class="bnav" id="btn-prev" onclick="navEse(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Precedente</button>
+        <button class="bnav" id="btn-next" onclick="navEse(1)">Successivo<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg></button>
+      </div>
+      <button class="btn-fine" onclick="fineSessione()">Fine Sessione</button>
+    </div>
+
+    <!-- CALENDARIO -->
+    <div class="screen" id="s-cal">
+      <div class="nh" style="padding-bottom:8px"><span class="ntitle">Calendario</span></div>
+      <div class="cal-nav">
+        <button class="cal-nbtn" onclick="cambiaMese(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <span class="cal-mese" id="cal-lbl">MAGGIO 2026</span>
+        <button class="cal-nbtn" onclick="cambiaMese(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="cal-hdr">
+        <div class="cal-dl">L</div><div class="cal-dl">M</div><div class="cal-dl">M</div>
+        <div class="cal-dl">G</div><div class="cal-dl">V</div><div class="cal-dl">S</div><div class="cal-dl">D</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-leg"><div class="cal-leg-dot"></div><span class="cal-leg-t">Giorno allenato</span></div>
+      <div class="stat-cards" id="cal-stats"></div>
+    </div>
+
+    <!-- GRAFICO -->
+    <div class="screen" id="s-grafico">
+      <div class="nh" style="padding-bottom:8px"><span class="ntitle">Grafico</span></div>
+      <div class="g-sel" onclick="openSheet('sh-ese-grafico')">
+        <span class="g-sel-l" id="g-ese-lbl">Seleziona esercizio</span>
+        <span class="g-sel-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </div>
+      <div class="met-tabs">
+        <button class="mtab active" onclick="switchMet('peso')">Peso</button>
+        <button class="mtab" onclick="switchMet('volume')">Volume</button>
+        <button class="mtab" onclick="switchMet('1rm')">1RM stimato</button>
+      </div>
+      <div id="g-content" style="display:none">
+        <div class="g-card">
+          <div class="g-card-hdr"><div><div class="g-card-nome" id="g-nome"></div><div class="g-card-sub" id="g-sub"></div></div></div>
+          <div class="chart-wrap">
+            <svg id="chart-svg" height="190" viewBox="0 0 320 190" preserveAspectRatio="none"></svg>
+            <div class="chart-tooltip" id="chart-tip"></div>
+          </div>
+        </div>
+        <div class="stat-cards" id="g-stats"></div>
+        <div class="ult-sess" id="ult-sess" style="display:none">
+          <div class="ult-hdr">ULTIME SESSIONI</div>
+          <div id="ult-lista"></div>
+          <button class="btn-mostra" id="btn-mostra" onclick="apriTutteSess()">Mostra di piu</button>
+        </div>
+      </div>
+      <div class="g-empty" id="g-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <div class="g-empty-t">Nessun esercizio</div>
+        <div class="g-empty-s">Seleziona un esercizio per vedere le sue progressioni</div>
+      </div>
+    </div>
+
+    <!-- OVERLAY -->
+    <div class="overlay" id="overlay" onclick="closeSheet()"></div>
+
+    <!-- SHEET: nuova scheda -->
+    <div class="sheet" id="sh-new-scheda">
+      <div class="sh"></div><div class="stitle">Nuova Scheda</div>
+      <div class="fg"><label class="flabel">NOME SCHEDA</label><input class="finput" id="in-scheda" placeholder="Es. Push Day, Full Body A..."/></div>
+      <button class="bconfirm" onclick="creaScheda()">Crea Scheda</button>
+    </div>
+
+    <!-- SHEET: nuovo esercizio -->
+    <div class="sheet" id="sh-new-ese">
+      <div class="sh"></div><div class="stitle">Nuovo Esercizio</div>
+      <div class="fg"><label class="flabel">NOME ESERCIZIO</label><input class="finput" id="in-ese-nome" placeholder="Es. Squat, Panca piana..."/></div>
+      <div class="fg"><label class="flabel">SET</label>
+        <div class="stepr"><span class="steplbl" id="new-set-lbl">3 serie</span>
+          <div class="stepc"><button class="stepbtn" onclick="stepChange('new','set',-1)">-</button><span class="stepv" id="new-set-v">3</span><button class="stepbtn" onclick="stepChange('new','set',1)">+</button></div>
+        </div>
+      </div>
+      <div class="fg"><label class="flabel">REPS PIANIFICATE</label><input class="finput" id="in-ese-rep" placeholder="Es. 8-10 oppure 12"/></div>
+      <div class="fg"><label class="flabel">RIR</label>
+        <div class="stepr"><span class="steplbl" id="new-rir-lbl">1 rep di riserva</span>
+          <div class="stepc"><button class="stepbtn" onclick="stepChange('new','rir',-1)">-</button><span class="stepv" id="new-rir-v">1</span><button class="stepbtn" onclick="stepChange('new','rir',1)">+</button></div>
+        </div>
+      </div>
+      <div class="fg"><label class="flabel">PESO DI RIFERIMENTO (kg)</label><input class="finput" id="in-ese-peso" placeholder="Es. 80" type="number"/></div>
+      <button class="bconfirm" onclick="aggiungiEse()">Aggiungi Esercizio</button>
+    </div>
+
+    <!-- SHEET: modifica esercizio -->
+    <div class="sheet" id="sh-mod-ese">
+      <div class="sh"></div><div class="stitle">Modifica Esercizio</div>
+      <div class="fg"><label class="flabel">NOME ESERCIZIO</label><input class="finput" id="mod-nome" placeholder="Es. Squat..."/></div>
+      <div class="fg"><label class="flabel">SET</label>
+        <div class="stepr"><span class="steplbl" id="mod-set-lbl">3 serie</span>
+          <div class="stepc"><button class="stepbtn" onclick="stepChange('mod','set',-1)">-</button><span class="stepv" id="mod-set-v">3</span><button class="stepbtn" onclick="stepChange('mod','set',1)">+</button></div>
+        </div>
+      </div>
+      <div class="fg"><label class="flabel">REPS PIANIFICATE</label><input class="finput" id="mod-rep" placeholder="Es. 8-10"/></div>
+      <div class="fg"><label class="flabel">RIR</label>
+        <div class="stepr"><span class="steplbl" id="mod-rir-lbl">1 rep di riserva</span>
+          <div class="stepc"><button class="stepbtn" onclick="stepChange('mod','rir',-1)">-</button><span class="stepv" id="mod-rir-v">1</span><button class="stepbtn" onclick="stepChange('mod','rir',1)">+</button></div>
+        </div>
+      </div>
+      <div class="fg"><label class="flabel">PESO DI RIFERIMENTO (kg)</label><input class="finput" id="mod-peso" placeholder="Es. 80" type="number"/></div>
+      <button class="bconfirm" onclick="salvaModEse()">Salva Modifiche</button>
+    </div>
+
+    <!-- SHEET: timer -->
+    <div class="sheet" id="sh-timer">
+      <div class="sh"></div><div class="stitle">Tempo di Recupero</div>
+      <div class="tpreset" id="tpreset">
+        <button class="tpbtn" onclick="setTimer(30)">30s</button>
+        <button class="tpbtn" onclick="setTimer(60)">1 min</button>
+        <button class="tpbtn" onclick="setTimer(90)">1:30</button>
+        <button class="tpbtn sel" onclick="setTimer(120)">2 min</button>
+        <button class="tpbtn" onclick="setTimer(150)">2:30</button>
+        <button class="tpbtn" onclick="setTimer(180)">3 min</button>
+        <button class="tpbtn" onclick="setTimer(240)">4 min</button>
+        <button class="tpbtn" onclick="setTimer(300)">5 min</button>
+        <button class="tpbtn" onclick="setTimer(0)">Off</button>
+      </div>
+      <button class="bconfirm" onclick="closeSheet()">Conferma</button>
+    </div>
+
+    <!-- SHEET: selezione esercizio grafico -->
+    <div class="sheet" id="sh-ese-grafico" style="max-height:75%">
+      <div class="sh"></div><div class="stitle">Scegli Esercizio</div>
+      <div id="lista-ese-g" style="overflow-y:auto;max-height:380px"></div>
+    </div>
+
+    <!-- SHEET: tutte le sessioni -->
+    <div class="sheet" id="sh-tutte-sess" style="max-height:80%">
+      <div class="sh"></div>
+      <div class="stitle" id="sh-tutte-title"></div>
+      <div id="sh-tutte-lista" style="overflow-y:auto;max-height:420px;scrollbar-width:none"></div>
+    </div>
+
+    <!-- SHEET: dettaglio giorno -->
+    <div class="sheet" id="sh-det-giorno" style="max-height:82%">
+      <div class="sh"></div>
+      <div id="sh-det-content" style="overflow-y:auto;max-height:500px;scrollbar-width:none"></div>
+    </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tbar">
+    <div class="titem on" id="tab-0" onclick="switchTab(0)">
+      <div class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></div>
+      <div class="tlabel">Allenamento</div>
+    </div>
+    <div class="titem off" id="tab-1" onclick="switchTab(1)">
+      <div class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <div class="tlabel">Calendario</div>
+    </div>
+    <div class="titem off" id="tab-2" onclick="switchTab(2)">
+      <div class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="tlabel">Grafico</div>
+    </div>
+  </div>
+</div>
+
+<script src="js/core/constants.js"></script>
+<script src="js/core/utils.js"></script>
+<script src="js/data/seed.js"></script>
+<script src="js/data/store.js"></script>
+<script src="js/services/chartService.js"></script>
+<script src="js/services/schedaService.js"></script>
+<script src="js/services/sessionService.js"></script>
+<script src="js/services/calendarService.js"></script>
+<script src="js/ui/shared.js"></script>
+<script src="js/ui/navigation.js"></script>
+<script src="js/ui/schedeView.js"></script>
+<script src="js/ui/sessionView.js"></script>
+<script src="js/ui/calendarView.js"></script>
+<script src="js/ui/chartView.js"></script>
+<script src="js/ui/bootstrap.js"></script>
+</body>
+</html>

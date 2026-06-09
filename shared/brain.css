@@ -1,0 +1,248 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0a;
+  --s1: #141414;
+  --s2: #1c1c1c;
+  --bd: rgba(255, 255, 255, 0.08);
+  --t: #fff;
+  --tm: rgba(255, 255, 255, 0.45);
+  --td: rgba(255, 255, 255, 0.2);
+}
+
+body {
+  background: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: 'DM Sans', sans-serif;
+  padding: 24px;
+}
+
+.phone {
+  width: 390px;
+  height: 844px;
+  background: var(--bg);
+  border-radius: 54px;
+  border: 10px solid #222;
+  box-shadow: 0 0 0 1px #333, 0 48px 140px rgba(0, 0, 0, 0.85);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 32px;
+  background: #111;
+  border-radius: 0 0 18px 18px;
+  z-index: 100;
+}
+
+.sb {
+  height: 50px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 26px 8px;
+  flex-shrink: 0;
+}
+
+.sb-t { font-size: 15px; font-weight: 600; color: white; }
+.sb-i { display: flex; gap: 5px; align-items: center; color: white; font-size: 11px; font-weight: 600; }
+
+.hub-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 20px 24px;
+  scrollbar-width: none;
+}
+
+.hub-scroll::-webkit-scrollbar { display: none; }
+
+.hub-brand {
+  padding: 6px 0 20px;
+}
+
+.hub-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--td);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.hub-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  color: white;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.hub-sub {
+  font-size: 14px;
+  color: var(--tm);
+  margin-top: 8px;
+  line-height: 1.45;
+}
+
+.hub-section {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--td);
+  margin: 18px 0 10px;
+}
+
+.app-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s, transform 0.12s;
+}
+
+.app-card:hover { background: #1a1a1a; }
+.app-card:active { transform: scale(0.985); }
+.app-card.disabled {
+  opacity: 0.55;
+  pointer-events: none;
+  cursor: default;
+}
+
+.app-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.app-icon.gym { background: rgba(255, 255, 255, 0.12); color: white; }
+.app-icon.nutri { background: rgba(120, 200, 140, 0.15); color: #7bc88a; }
+.app-icon.journal { background: rgba(167, 139, 250, 0.14); color: #a78bfa; }
+
+.app-icon svg { width: 24px; height: 24px; }
+
+.app-info { flex: 1; min-width: 0; }
+
+.app-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 3px;
+}
+
+.app-desc {
+  font-size: 12px;
+  color: var(--tm);
+}
+
+.app-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--tm);
+  flex-shrink: 0;
+}
+
+.app-chev svg {
+  width: 14px;
+  height: 14px;
+  color: var(--td);
+}
+
+.hub-foot {
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.12);
+  padding-top: 16px;
+  line-height: 1.5;
+}
+
+/* Placeholder app (NutriTrack) */
+.app-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+}
+
+.app-nh {
+  padding: 10px 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.nback {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--tm);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 6px 0;
+}
+
+.nback svg { width: 15px; height: 15px; }
+
+.ntitle {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  color: white;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 16px;
+  text-align: center;
+}
+
+.placeholder svg {
+  width: 56px;
+  height: 56px;
+  color: white;
+  opacity: 0.15;
+}
+
+.placeholder-t {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--tm);
+}
+
+.placeholder-s {
+  font-size: 13px;
+  color: var(--td);
+  line-height: 1.5;
+  max-width: 260px;
+}

@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journal · Second Brain</title>
+  <meta name="description" content="Il tuo diario personale digitale — pensieri, ricordi e mood giornalieri.">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Reset & tokens ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:   #0a0a0a;
+      --s1:   #141414;
+      --s2:   #1c1c1c;
+      --s3:   #242424;
+      --bd:   rgba(255,255,255,.08);
+      --bd2:  rgba(255,255,255,.05);
+      --t:    #fff;
+      --tm:   rgba(255,255,255,.45);
+      --td:   rgba(255,255,255,.22);
+      --acc:  #a78bfa;         /* viola — identità Journal */
+      --acc2: #c4b5fd;         /* viola chiaro */
+      --accb: rgba(167,139,250,.14);
+      --accb2:rgba(167,139,250,.22);
+      --del:  rgba(255,90,90,.75);
+    }
+
+    body {
+      background: #0f0c1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'DM Sans', sans-serif;
+      padding: 24px;
+    }
+
+    /* ── Phone frame ─────────────────────────────────────────────────────── */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 54px;
+      border: 10px solid #1e1a2e;
+      box-shadow:
+        0 0 0 1px #2d2540,
+        0 48px 140px rgba(0,0,0,.9),
+        0 0 80px rgba(167,139,250,.07);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Notch ───────────────────────────────────────────────────────────── */
+    .notch {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 32px;
+      background: #0a0a0a;
+      border-radius: 0 0 18px 18px;
+      z-index: 100;
+    }
+
+    /* ── Status bar ──────────────────────────────────────────────────────── */
+    .sb {
+      height: 50px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 26px 8px;
+      flex-shrink: 0;
+    }
+    .sb-t { font-size: 15px; font-weight: 600; color: #fff; }
+    .sb-i { display: flex; gap: 5px; align-items: center; color: #fff; font-size: 11px; font-weight: 600; }
+
+    /* ── App body ────────────────────────────────────────────────────────── */
+    .app-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ── Nav header ──────────────────────────────────────────────────────── */
+    .nh {
+      padding: 8px 20px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .nback {
+      display: flex; align-items: center; gap: 3px;
+      color: var(--tm); font-size: 14px; font-weight: 500;
+      text-decoration: none; padding: 6px 0;
+      transition: color .15s;
+    }
+    .nback:hover { color: var(--acc); }
+    .nback svg { width: 15px; height: 15px; }
+    .app-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 34px; color: #fff;
+      letter-spacing: 1px; line-height: 1;
+    }
+    .app-title span { color: var(--acc); }
+
+    /* ── Stats card ──────────────────────────────────────────────────────── */
+    .stats-card {
+      margin: 2px 16px 10px;
+      background: var(--accb);
+      border: 1px solid rgba(167,139,250,.2);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      flex-shrink: 0;
+    }
+    .stat-item {
+      text-align: center;
+      border-right: 1px solid rgba(167,139,250,.15);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px; color: var(--acc2); line-height: 1;
+    }
+    .stat-lbl {
+      font-size: 10px; font-weight: 600;
+      color: var(--tm); letter-spacing: .5px; margin-top: 3px;
+    }
+
+    /* ── Search ──────────────────────────────────────────────────────────── */
+    .search-wrap {
+      padding: 0 16px 8px;
+      flex-shrink: 0;
+    }
+    .search-box {
+      width: 100%;
+      background: var(--s2);
+      border: 1px solid var(--bd);
+      border-radius: 12px;
+      padding: 10px 14px 10px 36px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .search-box::placeholder { color: var(--td); }
+    .search-box:focus { border-color: rgba(167,139,250,.4); }
+    .search-wrap-inner { position: relative; }
+    .search-icon {
+      position: absolute;
+      left: 11px; top: 50%;
+      transform: translateY(-50%);
+      width: 16px; height: 16px;
+      color: var(--td);
+      pointer-events: none;
+    }
+
+    /* ── Tag filters ─────────────────────────────────────────────────────── */
+    .tag-filter-row {
+      display: flex;
+      gap: 6px;
+      padding: 0 16px 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .tag-filter-row::-webkit-scrollbar { display: none; }
+    .tag-filter-btn {
+      flex-shrink: 0;
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--bd);
+      background: transparent;
+      color: var(--tm);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tag-filter-btn.active {
+      background: var(--accb2);
+      border-color: rgba(167,139,250,.4);
+      color: var(--acc2);
+    }
+
+    /* ── Scroll area ─────────────────────────────────────────────────────── */
+    .scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px 16px;
+      scrollbar-width: none;
+    }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    /* ── Entry card ──────────────────────────────────────────────────────── */
+    .entry-card {
+      background: var(--s1);
+      border: 1px solid var(--bd);
+      border-radius: 16px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: background .15s, transform .12s, border-color .15s;
+    }
+    .entry-card:hover { background: var(--s2); border-color: rgba(167,139,250,.2); }
+    .entry-card:active { transform: scale(0.985); }
+
+    .entry-photo {
+      width: 100%;
+      height: 140px;
+      background-size: cover;
+      background-position: center;
+      background-color: var(--s2);
+    }
+
+    .entry-body-wrap { padding: 12px 14px 14px; }
+
+    .entry-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .entry-mood { font-size: 18px; line-height: 1; }
+    .entry-date { font-size: 11px; color: var(--td); font-weight: 500; }
+
+    .entry-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .entry-snippet {
+      font-size: 12px;
+      color: var(--tm);
+      line-height: 1.45;
+      margin-bottom: 6px;
+    }
+
+    .entry-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .entry-tag {
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: var(--accb);
+      border: 1px solid rgba(167,139,250,.18);
+      color: var(--acc2);
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* ── Empty state ─────────────────────────────────────────────────────── */
+    .empty-state {
+      padding: 48px 20px;
+      text-align: center;
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: .6; }
+    .empty-t { font-size: 16px; font-weight: 600; color: var(--tm); margin-bottom: 6px; }
+    .empty-s { font-size: 12px; color: var(--td); line-height: 1.5; max-width: 220px; margin: 0 auto; }
+
+    /* ── FAB ─────────────────────────────────────────────────────────────── */
+    .fab-bar {
+      padding: 8px 16px 12px;
+      flex-shrink: 0;
+      border-top: 1px solid var(--bd);
+    }
+    .fab {
+      width: 100%;
+      padding: 14px;
+      background: var(--acc);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .3px;
+      transition: background .15s, transform .1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .fab:hover { background: #9370f0; }
+    .fab:active { transform: scale(0.98); }
+    .fab svg { width: 18px; height: 18px; }
+
+    /* ── Overlay ─────────────────────────────────────────────────────────── */
+    .overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.6);
+      z-index: 50;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s;
+    }
+    .overlay.vis { opacity: 1; pointer-events: all; }
+
+    /* ── Sheet ───────────────────────────────────────────────────────────── */
+    .sheet {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: #111118;
+      border-radius: 22px 22px 0 0;
+      border-top: 1px solid rgba(167,139,250,.15);
+      z-index: 60;
+      transform: translateY(100%);
+      transition: transform .32s cubic-bezier(.32,.72,0,1);
+      padding: 10px 20px 32px;
+      max-height: 92%;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .sheet::-webkit-scrollbar { display: none; }
+    .sheet.vis { transform: translateY(0); }
+
+    .sh-handle {
+      width: 34px; height: 4px;
+      background: rgba(255,255,255,.15);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+
+    .sh-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px; color: #fff;
+      letter-spacing: .5px; margin-bottom: 16px;
+    }
+
+    /* ── Editor fields ───────────────────────────────────────────────────── */
+    .field-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--td);
+      letter-spacing: .8px;
+      margin-bottom: 6px;
+    }
+    .field-group { margin-bottom: 14px; }
+
+    .finput {
+      width: 100%;
+      padding: 11px 13px;
+      background: var(--s2);
+      border: 1px solid var(--bd);
+      border-radius: 11px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .finput:focus { border-color: rgba(167,139,250,.45); }
+    .finput.body-area {
+      resize: none;
+      min-height: 90px;
+      line-height: 1.5;
+    }
+
+    /* ── Mood picker ─────────────────────────────────────────────────────── */
+    .mood-row {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+    }
+    .mood-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 4px;
+      border-radius: 12px;
+      border: 1px solid var(--bd);
+      background: var(--s2);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .mood-btn .mood-em { font-size: 20px; line-height: 1; }
+    .mood-btn .mood-lbl { font-size: 9px; color: var(--td); font-weight: 600; font-family: 'DM Sans', sans-serif; }
+    .mood-btn.active {
+      background: var(--accb2);
+      border-color: rgba(167,139,250,.4);
+    }
+    .mood-btn.active .mood-lbl { color: var(--acc2); }
+
+    /* ── Tag selector ────────────────────────────────────────────────────── */
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag-btn {
+      padding: 6px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--bd);
+      background: var(--s2);
+      color: var(--tm);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tag-btn.active {
+      background: var(--accb2);
+      border-color: rgba(167,139,250,.4);
+      color: var(--acc2);
+    }
+
+    /* ── Photo upload area ───────────────────────────────────────────────── */
+    #photo-preview { margin-bottom: 14px; }
+
+    .photo-upload-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--s2);
+      border: 1px dashed rgba(167,139,250,.3);
+      border-radius: 12px;
+      color: var(--tm);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .photo-upload-btn:hover { border-color: rgba(167,139,250,.6); color: var(--acc2); }
+    .photo-upload-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+    .photo-prev-wrap {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(167,139,250,.25);
+    }
+    .photo-prev-img {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+      display: block;
+    }
+    .photo-prev-remove {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.65);
+      border: none;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s;
+    }
+    .photo-prev-remove:hover { background: rgba(255,80,80,.75); }
+
+    /* ── Sheet action buttons ────────────────────────────────────────────── */
+    .sh-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+    .btn-save {
+      width: 100%;
+      padding: 14px;
+      background: var(--acc);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-save:hover { background: #9370f0; }
+    .btn-delete {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,90,90,.1);
+      border: 1px solid rgba(255,90,90,.25);
+      border-radius: 12px;
+      color: #ff7070;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      display: none;
+    }
+    .btn-delete:hover { background: rgba(255,90,90,.2); }
+
+    /* ── Toast ───────────────────────────────────────────────────────────── */
+    .toast {
+      position: absolute;
+      bottom: 88px; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: #fff;
+      color: #0a0a0a;
+      padding: 11px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      z-index: 200;
+      white-space: nowrap;
+    }
+    .toast.vis { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Scrollbar on sheet ──────────────────────────────────────────────── */
+    .sheet::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="notch"></div>
+
+  <!-- Status bar -->
+  <div class="sb">
+    <span class="sb-t" id="sb-time">9:41</span>
+    <div class="sb-i">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:14px;height:14px">
+        <path d="M1.5 8.5a13 13 0 0 1 21 0M5 12a10 10 0 0 1 14 0M8.5 15.5a6 6 0 0 1 7 0M12 19h.01" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>5G</span>
+      <svg viewBox="0 0 24 24" style="width:18px;height:14px">
+        <rect x="2" y="7" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        <rect x="3" y="8" width="11" height="8" rx="1" fill="currentColor"/>
+        <path d="M20 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- App body -->
+  <div class="app-body">
+
+    <!-- Nav header -->
+    <div class="nh">
+      <a class="nback" href="../../index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Brain
+      </a>
+      <span class="app-title">Jour<span>nal</span></span>
+      <div style="width:48px"></div><!-- spacer -->
+    </div>
+
+    <!-- Stats card -->
+    <div class="stats-card">
+      <div class="stat-item">
+        <div class="stat-val" id="stat-total">0</div>
+        <div class="stat-lbl">Voci</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="stat-month">0</div>
+        <div class="stat-lbl">Questo mese</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="stat-streak">0</div>
+        <div class="stat-lbl">🔥 Streak</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="stat-mood">—</div>
+        <div class="stat-lbl">Mood medio</div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <div class="search-wrap-inner">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="search"
+          id="search-input"
+          class="search-box"
+          placeholder="Cerca nei tuoi pensieri…"
+          oninput="onSearch(this.value)"
+          autocomplete="off"
+        >
+      </div>
+    </div>
+
+    <!-- Tag filter chips -->
+    <div class="tag-filter-row" id="tag-filter-row"></div>
+
+    <!-- Entry list -->
+    <div class="scroll">
+      <div id="entry-list"></div>
+    </div>
+
+    <!-- FAB -->
+    <div class="fab-bar">
+      <button class="fab" onclick="openEditorSheet()" id="btn-new-entry">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Nuova voce
+      </button>
+    </div>
+  </div><!-- /app-body -->
+
+  <!-- Overlay -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ── Editor Sheet ─────────────────────────────────────── -->
+  <div class="sheet" id="sh-editor">
+    <div class="sh-handle"></div>
+    <div class="sh-title" id="sh-editor-title">Nuova voce</div>
+
+    <!-- Foto ricordo -->
+    <div class="field-group">
+      <div class="field-lbl">FOTO RICORDO</div>
+      <div id="photo-preview"></div>
+    </div>
+
+    <!-- Titolo -->
+    <div class="field-group">
+      <div class="field-lbl">TITOLO (opzionale)</div>
+      <input
+        type="text"
+        id="ed-title"
+        class="finput"
+        placeholder="Un titolo per questo momento…"
+        autocomplete="off"
+      >
+    </div>
+
+    <!-- Testo -->
+    <div class="field-group">
+      <div class="field-lbl">COM'È ANDATA?</div>
+      <textarea
+        id="ed-body"
+        class="finput body-area"
+        placeholder="Scrivi i tuoi pensieri, emozioni, ricordi…"
+      ></textarea>
+    </div>
+
+    <!-- Mood -->
+    <div class="field-group">
+      <div class="field-lbl">MOOD</div>
+      <div class="mood-row" id="mood-row"></div>
+    </div>
+
+    <!-- Tag -->
+    <div class="field-group">
+      <div class="field-lbl">TAG</div>
+      <div class="tag-row" id="tag-row"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="sh-actions">
+      <button class="btn-save" onclick="saveEntry()" id="btn-save">Salva</button>
+      <button class="btn-delete" id="btn-delete" onclick="deleteEntry()">Elimina voce</button>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<!-- ── Scripts (order matters) ──────────────────────────────────────────── -->
+<script src="js/core/constants.js"></script>
+<script src="js/core/utils.js"></script>
+<script src="js/data/store.js"></script>
+<script src="js/services/journalService.js"></script>
+<script src="js/ui/shared.js"></script>
+<script src="js/ui/listView.js"></script>
+<script src="js/ui/entryEditor.js"></script>
+
+<!-- Inline bootstrap: genera bottoni mood/tag dinamicamente prima di DOMContentLoaded -->
+<script>
+  // Genera mood buttons
+  document.addEventListener('DOMContentLoaded', () => {
+    const moodRow = document.getElementById('mood-row');
+    MOOD_LEVELS.forEach(m => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'mood-btn' + (m.value === 3 ? ' active' : '');
+      btn.dataset.mood = m.value;
+      btn.innerHTML = `<span class="mood-em">${m.emoji}</span><span class="mood-lbl">${m.label}</span>`;
+      btn.onclick = () => toggleMood(btn);
+      moodRow.appendChild(btn);
+    });
+
+    const tagRow = document.getElementById('tag-row');
+    TAGS.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tag-btn';
+      btn.dataset.tag = tag;
+      btn.textContent = tag;
+      btn.onclick = () => toggleTag(btn);
+      tagRow.appendChild(btn);
+    });
+  });
+</script>
+
+<script src="js/ui/bootstrap.js"></script>
+
+</body>
+</html>
