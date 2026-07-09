@@ -141,6 +141,7 @@ body {
 .app-icon.gym { background: rgba(255, 255, 255, 0.12); color: white; }
 .app-icon.nutri { background: rgba(120, 200, 140, 0.15); color: #7bc88a; }
 .app-icon.journal { background: rgba(167, 139, 250, 0.14); color: #a78bfa; }
+.app-icon.habits { background: rgba(249, 115, 22, 0.14); color: #f97316; }
 
 .app-icon svg { width: 24px; height: 24px; }
 
